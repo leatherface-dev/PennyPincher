@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Data;
 using Dalamud.Game;
+using Dalamud.Game.ClientState;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Game.Network;
@@ -24,6 +25,7 @@ namespace PennyPincher
         [PluginService] public static DataManager Data { get; private set; } = null!;
         [PluginService] public static GameNetwork GameNetwork { get; private set; } = null!;
         [PluginService] public static SigScanner SigScanner { get; private set; } = null!;
+        [PluginService] public static ClientState ClientState { get; private set; } = null!;
         
         private const string commandName = "/penny";
         
@@ -33,6 +35,7 @@ namespace PennyPincher
 
         private int configMode;
         private bool configHq;
+        private bool configUndercutSelf;
         private bool configVerbose;
 
         private bool _config;
@@ -123,6 +126,7 @@ namespace PennyPincher
             string[] modes = { "Never", "Only at Retainer", "Always" };
             ImGui.Combo("When to copy", ref configMode, modes, modes.Length);
             ImGui.Checkbox($"When listing an item that can be HQ, only undercut HQ items", ref configHq);
+            ImGui.Checkbox($"Undercut your own retainers", ref configUndercutSelf);
             ImGui.Checkbox($"Print chat message when prices are copied to clipboard", ref configVerbose);
 
             ImGui.Separator();
@@ -145,6 +149,7 @@ namespace PennyPincher
             configMode = configuration.alwaysOn ? 2 : (configuration.smart ? 1 : 0);
 
             configHq = configuration.hq;
+            configUndercutSelf = configuration.undercutSelf;
             configVerbose = configuration.verbose;
         }
 
@@ -170,6 +175,7 @@ namespace PennyPincher
             configuration.smart = configMode == 1;
 
             configuration.hq = configHq;
+            configuration.undercutSelf = configUndercutSelf;
             configuration.verbose = configVerbose;
             
             PluginInterface.SavePluginConfig(configuration);
@@ -191,7 +197,11 @@ namespace PennyPincher
             var i = 0;
             if (configuration.hq && items.Single(j => j.RowId == listing.ItemListings[0].CatalogId).CanBeHq)
             {
-                while (i < listing.ItemListings.Count && !listing.ItemListings[i].IsHq) i++;
+                while (i < listing.ItemListings.Count && (!listing.ItemListings[i].IsHq || (!configUndercutSelf && listing.ItemListings[i].RetainerOwnerId == ClientState.LocalContentId)))
+                {
+                    i++;
+                }
+
                 if (i == listing.ItemListings.Count) return;
             }
 

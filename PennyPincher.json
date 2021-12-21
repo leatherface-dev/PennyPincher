@@ -7,6 +7,6 @@
     "Tags": [ "marketboard", "undercut", "penny", "clipboard" ],
     "ImageUrls": [],
     "IconUrl": "https://github.com/tesu/PennyPincher/raw/master/images/icon.png",
-    "Changelog": "Brings back /penny hq, by popular demand.",
+    "Changelog": "Add option to avoid undercutting your own retainers.",
     "DalamudApiLevel": 5
 }

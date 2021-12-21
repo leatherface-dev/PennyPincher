@@ -22,5 +22,7 @@ namespace PennyPincher
         public bool smart { get; set; } = true;
 
         public bool verbose { get; set; } = true;
+
+        public bool undercutSelf { get; set; } = false;
     }
 }
