@@ -195,9 +195,18 @@ namespace PennyPincher
             if (!configuration.alwaysOn && (!configuration.smart || !Retainer())) return;
             var listing = MarketBoardCurrentOfferings.Read(dataPtr);
             var i = 0;
+            
+            if (!configUndercutSelf)
+            {
+                foreach (var listItem in listing.ItemListings.Where(listItem => listItem.RetainerOwnerId == ClientState.LocalContentId).ToList())
+                {
+                    listing.ItemListings.Remove(listItem);
+                }
+            }
+            
             if (configuration.hq && items.Single(j => j.RowId == listing.ItemListings[0].CatalogId).CanBeHq)
             {
-                while (i < listing.ItemListings.Count && (!listing.ItemListings[i].IsHq || (!configUndercutSelf && listing.ItemListings[i].RetainerOwnerId == ClientState.LocalContentId)))
+                while (i < listing.ItemListings.Count && !listing.ItemListings[i].IsHq)
                 {
                     i++;
                 }
